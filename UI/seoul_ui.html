@@ -1003,6 +1003,135 @@
             // 기본 응답
             return `"${question}"에 대해 답변드리겠습니다.<br><br>죄송합니다만, 해당 질문에 대한 정확한 FAQ 정보가 없습니다. 😅<br><br>하지만 일반적인 서울 관광 정보는 다음을 참고해주세요:<br><br>• <strong>Visit Seoul 웹사이트:</strong> https://korean.visitseoul.net<br>• <strong>관광 문의:</strong> 1330 (관광통역안내전화)<br>• <strong>서울시티투어버스:</strong> https://korean.visitseoul.net/citytourbus<br><br>더 자세한 정보는 빠른 시일내에 openAI API를 통해 제공해 드리겠습니다! 😊`;
         }
-    </script>
+    // API 주소 자동 설정 + 쿼리 오버라이드(?api=http://IP:PORT)
+  function getParam(name){ return new URL(location.href).searchParams.get(name); }
+  const forced = getParam('api');
+  const proto  = location.protocol;
+  const host   = location.hostname;
+  const API_BASE = forced || `${proto}//${host}:8000`;
+  const CHAT_URL = API_BASE + "/chat";
+
+  // 오른쪽 패널 엘리먼트 핸들
+  const rightPanel = document.querySelector('.right-panel');
+  const rpMessages = rightPanel.querySelector('.chat-messages');
+  const rpInput    = rightPanel.querySelector('.chat-input');
+  const rpSendBtn  = rightPanel.querySelector('.send-button');
+
+  let rpHistory = [];
+  let rpSending = false;
+
+  // 시간 문자열
+  function nowTime(){
+    return new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // 사용자/AI 말풍선 추가(오른쪽 패널 스타일 유지)
+  function rpAddMessage(role, html){
+    const wrap = document.createElement('div');
+    wrap.className = `message ${role}`;
+    wrap.innerHTML = role === 'user'
+      ? `<div class="avatar user">👤</div>
+         <div>
+           <div class="message-content">${html}</div>
+           <div class="message-time">${nowTime()}</div>
+         </div>`
+      : `<div class="avatar ai">🤖</div>
+         <div>
+           <div class="message-content">${html}</div>
+           <div class="message-time">${nowTime()}</div>
+         </div>`;
+    rpMessages.appendChild(wrap);
+    rpMessages.scrollTop = rpMessages.scrollHeight;
+  }
+
+  // 일정(itinerary_v1)을 기존 카드 스타일로 렌더
+  function rpRenderItinerary(it){
+    if (it.summary) rpAddMessage('ai', escapeHTML(it.summary));
+
+    let html = '';
+    (it.days || []).forEach((day, di) => {
+      html += `<strong>📅 ${escapeHTML(day.date || `Day ${di+1}`)}</strong>`;
+      (day.segments || []).forEach(seg => {
+        const t1  = seg.time_start || '';
+        const t2  = seg.time_end   || '';
+        const ttl = seg.title || '';
+        const note= seg.note  || '';
+        const move= seg.transport ? ` · ${escapeHTML(seg.transport)}` : '';
+        const dist= seg.distance ? ` (${escapeHTML(seg.distance)})` : '';
+        html += `
+          <div class="course-box">
+            <strong>${escapeHTML(t1)}${t2?` - ${escapeHTML(t2)}`:''} - ${escapeHTML(ttl)}</strong>
+            ${note ? `${escapeHTML(note)}<br>` : ''}
+            ${move}${dist}
+          </div>`;
+      });
+    });
+    if (!html) html = '적절한 일정을 만들 수 없어 텍스트로 안내했어요.';
+    rpAddMessage('ai', html);
+  }
+
+  function escapeHTML(s){
+    return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  }
+
+  // 전송
+  async function rpSend(){
+    if(rpSending) return;
+    const text = (rpInput.value || '').trim();
+    if(!text) return;
+
+    rpSending = true;
+    rpInput.disabled = true;
+    rpSendBtn.disabled = true;
+
+    rpAddMessage('user', escapeHTML(text));
+    rpInput.value = '';
+
+    try{
+      const res = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: rpHistory })
+      });
+
+      if(!res.ok){
+        const errText = await res.text();
+        rpAddMessage('ai', `서버 오류(${res.status}).<br>URL: ${CHAT_URL}<br>메시지: ${escapeHTML(errText.slice(0,300))}`);
+        return;
+      }
+
+      const data = await res.json();
+
+      // 모델이 itinerary_v1 JSON 구조를 보냈는지 체크
+      if (data && data.type === 'itinerary_v1') {
+        rpRenderItinerary(data);
+        rpHistory.push({ role:'assistant', content: JSON.stringify(data) });
+      } else {
+        const t = data.text || (typeof data === 'string' ? data : JSON.stringify(data));
+        rpAddMessage('ai', escapeHTML(t));
+        rpHistory.push({ role:'assistant', content: t });
+      }
+      rpHistory.push({ role:'user', content: text });
+
+    } catch(err){
+      rpAddMessage('ai', `네트워크 오류: ${escapeHTML(String(err))}<br>API: ${CHAT_URL}`);
+      console.error(err);
+    } finally{
+      rpSending = false;
+      rpInput.disabled = false;
+      rpSendBtn.disabled = false;
+      rpInput.focus();
+    }
+  }
+
+  // 이벤트 바인딩(오른쪽 패널만)
+  rpSendBtn.addEventListener('click', rpSend);
+  rpInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      rpSend();
+    }
+  });
+</script>
 </body>
 </html>
