@@ -1,9 +1,0 @@
-그리고 가상환경에서 터미널에서 
-pip install -U fastapi uvicorn python-dotenv google-generativeai
-나중에 이거 requirement.txt로 만들것이기는 하지만 지금은 이걸로 사용
-
-아래는 서버 실행 코드 터미널에서 입력
-uvicorn server:app --reload --port 8000
-끄는거는 ctrl+c
-
-그 후 html(seoul_ui.html)실행하면 됌
