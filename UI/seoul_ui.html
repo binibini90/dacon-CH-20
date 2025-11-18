@@ -1263,7 +1263,7 @@
             messageDiv.innerHTML = `
                 <div class="avatar user">👤</div>
                 <div>
-                    <div class="message-content">${text}</div>
+                    <div class="message-content">${escapeHTML(String(text || ''))}</div>
                     <div class="message-time">${time}</div>
                 </div>
             `;
@@ -1309,6 +1309,156 @@
             
             return `"${question}"에 대해 답변드리겠습니다.<br><br>죄송합니다만, 해당 질문에 대한 정확한 FAQ 정보가 없습니다. 😅<br><br>하지만 일반적인 서울 관광 정보는 다음을 참고해주세요:<br><br>• <strong>Visit Seoul 웹사이트:</strong> https://korean.visitseoul.net<br>• <strong>관광 문의:</strong> 1330 (관광통역안내전화)<br>• <strong>서울시티투어버스:</strong> https://korean.visitseoul.net/citytourbus<br><br>더 자세한 정보가 필요하시면 다른 질문을 해주세요! 😊`;
         }
+
+        /* ======== AI 여행 플래너 연결 ======== */
+
+        /* API 주소 자동 설정 */
+        function getParam(name){ return new URL(location.href).searchParams.get(name); }
+        const forced = getParam('api');
+        const proto  = location.protocol;
+        const host   = location.hostname;
+        const API_BASE = forced || (
+            (proto === 'file:' || !host) ? 'http://localhost:8000'
+                                         : `${proto}//${host}:8000`
+        );
+        const CHAT_URL = API_BASE + "/chat";
+
+        let recHistory = [];
+
+        /* 요소 선택 */
+        const recInput = document.querySelector('.recommendation-page .chat-input');
+        const recSend  = document.querySelector('.recommendation-page .send-button');
+        const recMsgs  = document.querySelector('.recommendation-page .chat-messages');
+
+        /* 유틸 */
+        function escapeHTML(s){
+            return String(s).replace(/[&<>]/g, c => (
+                {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]
+            ));
+        }
+
+        function addMsg(role, html){
+            const time = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+            const div = document.createElement('div');
+            div.className = 'message ' + (role==='user'?'user':'ai');
+            div.innerHTML = `
+                <div class="avatar ${role==='user'?'user':'ai'}">${role==='user'?'👤':'🤖'}</div>
+                <div>
+                    <div class="message-content">${html}</div>
+                    <div class="message-time">${time}</div>
+                </div>`;
+            recMsgs.appendChild(div);
+            recMsgs.scrollTop = recMsgs.scrollHeight;
+        }
+
+        /* 전송 함수 */
+        async function sendRecMsg(){
+            const text = recInput.value.trim();
+            if(!text) return;
+            recInput.value = '';
+            addMsg('user', escapeHTML(text));
+            recHistory.push({ role:'user', content: text });
+
+            try{
+                const r = await fetch(CHAT_URL,{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({ message:text, history:recHistory })
+                });
+                if(!r.ok){
+                    addMsg('ai', `서버 오류(${r.status})`);
+                    return;
+                }
+                const data = await r.json();
+
+                // 1) 우선 그대로 시도
+                let iti = coerceItinerary(data);
+
+                // 2) 못 잡았는데 data.text 안에 있을 수도 있음
+                if(!iti && data && typeof data.text === 'string'){
+                    iti = coerceItinerary(data.text);
+                }
+
+                // 3) 있으면 일정 렌더, 없으면 텍스트 그대로
+                if (iti){
+                    renderItinerary(iti);
+                    recHistory.push({role:'assistant', content: JSON.stringify(iti)});
+                } else {
+                    const t = (data && data.text) ? data.text : (
+                        typeof data === 'string' ? data : JSON.stringify(data)
+                    );
+                    addMsg('ai', escapeHTML(t));
+                    recHistory.push({role:'assistant', content: t});
+                }
+            } catch (e) {
+                addMsg('ai', '네트워크/파싱 오류가 발생했어요. 콘솔을 확인해 주세요.');
+                console.error(e);
+            }
+        }
+
+        /* 이벤트 연결 */
+        recSend.onclick = sendRecMsg;
+        recInput.addEventListener('keydown', e=>{
+            if(e.key==='Enter'){ e.preventDefault(); sendRecMsg(); }
+        });
+
+        // 코드블록(```json ... ```) 또는 순수 JSON 문자열을 객체로 변환
+        function parseMaybeJSONBlock(s){
+            if(typeof s !== 'string') return null;
+            // ```json ... ``` 또는 ``` ... ```
+            const fence = s.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+            const raw = fence ? fence[1] : s.trim();
+            try{ return JSON.parse(raw); }catch{ return null; }
+        }
+
+        // 다양한 형태의 응답을 itinerary 구조로 정규화 시도
+        function coerceItinerary(data){
+            // 케이스 A: 이미 객체이고 type 일치
+            if (data && typeof data === 'object' && data.type === 'itinerary_v1') return data;
+
+            // 케이스 B: {text: "```json {...}```"} 같은 형태
+            if (data && typeof data === 'object' && typeof data.text === 'string'){
+                const obj = parseMaybeJSONBlock(data.text);
+                if (obj && obj.type === 'itinerary_v1') return obj;
+            }
+
+            // 케이스 C: 응답이 아예 문자열(코드블록/JSON 문자열)
+            if (typeof data === 'string'){
+                const obj = parseMaybeJSONBlock(data);
+                if (obj && obj.type === 'itinerary_v1') return obj;
+            }
+
+            return null; // 못 맞췄으면 null
+        }
+
+        function renderItinerary(data){
+            if(data.summary) addMsg('ai', escapeHTML(data.summary));
+            (data.days||[]).forEach((day, idx)=>{
+                const dayLabel = day.label || day.date || `Day ${idx+1}`;
+                let html = `<strong>📅 ${escapeHTML(dayLabel)} 추천 코스</strong>`;
+                (day.segments||[]).forEach(seg=>{
+                    const time = seg.time || [seg.time_start, seg.time_end].filter(Boolean).join(' - ');
+                    const title = seg.title || '';
+                    const kind  = seg.kind  || '';
+                    const move  = seg.move_text || seg.transport || '';
+                    const rating = (typeof seg.rating==='number') ? `⭐ ${seg.rating.toFixed(1)}점` : '';
+                    const reviews = seg.reviews ? ` · 리뷰 ${seg.reviews}` : '';
+                    const note = seg.note ? `<br>${escapeHTML(seg.note)}` : '';
+
+                    html += `
+                        <div class="course-box">
+                            <strong>${escapeHTML(time)} - ${escapeHTML(title)}</strong>
+                            ${kind ? `${escapeHTML(kind)}` : ''} ${move ? `· ${escapeHTML(move)}` : ''}${note}
+                            <br>${rating}${reviews}
+                        </div>`;
+                });
+                addMsg('ai', html);
+            });
+        }
+
+        // 상단 "코스 추천받기" 버튼 -> 추천 채팅으로 메시지 전송
+        document.querySelector('.recommendation-page .submit-btn')
+            .addEventListener('click', ()=> sendRecMsg());
     </script>
 </body>
 </html>
