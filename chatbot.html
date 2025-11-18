@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>맞춤형 관광 코스 추천</title>
+    <title>서울 관광 포털</title>
     <style>
         * {
             margin: 0;
@@ -15,81 +15,306 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: white;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
 
-        .container {
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+        /* 네비게이션 바 */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
-        .header {
+        .navbar-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 30px;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-main {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 30px;
-            text-align: center;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.1em;
+        }
+
+        .logo-sub {
+            font-size: 0.5em;
+            color: #999;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-item {
             position: relative;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1.05em;
+            padding: 10px 15px;
+            color: #333;
+            transition: color 0.3s;
         }
 
-        .header h1 {
-            font-size: 2em;
-            margin-bottom: 5px;
+        .nav-item:hover {
+            color: #667eea;
         }
 
-        .faq-btn {
+        .dropdown {
+            display: none;
             position: absolute;
-            right: 30px;
-            top: 50%;
-            transform: translateY(-50%);
+            top: 100%;
+            left: 0;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            min-width: 250px;
+            padding: 10px 0;
+            margin-top: 0;
+            z-index: 100;
+        }
+
+        .dropdown::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: transparent;
+        }
+
+        .nav-item:hover .dropdown,
+        .dropdown:hover {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            color: #333;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+            color: #667eea;
+            padding-left: 25px;
+        }
+
+        /* 메인 페이지 */
+        .main-page {
+            display: block;
+        }
+
+        .hero-section {
+            height: 600px;
+            background: url(/Users/hyeonnii/Desktop/dacon-CH-20/UI/images/main_2.png);
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .hero-content p {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .hero-button {
             background: white;
             color: #667eea;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .hero-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+
+        /* 카드 섹션 */
+        .cards-section {
+            max-width: 1400px;
+            margin: 80px auto;
+            padding: 0 30px;
+        }
+
+        .section-title {
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            text-align: center;
+            color: #333;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .card-content {
+            padding: 25px;
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .card-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .card-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border: none;
             padding: 12px 25px;
             border-radius: 25px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1em;
+            transition: transform 0.2s;
         }
 
-        .faq-btn:hover {
-            transform: translateY(-50%) scale(1.05);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        .card-button:hover {
+            transform: scale(1.05);
+        }
+
+        /* 추천 시스템 페이지 */
+        .recommendation-page {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .page-header-content {
+            flex: 1;
+        }
+
+        .page-header h1 {
+            font-size: 1.6em;
+            margin-bottom: 3px;
+        }
+
+        .page-header p {
+            font-size: 0.9em;
+            opacity: 0.9;
         }
 
         .input-section {
             display: flex;
-            gap: 20px;
-            padding: 20px 30px;
+            flex-direction: column;
+            gap: 12px;
+            padding: 15px 30px;
             background: #f8f9fa;
             border-bottom: 2px solid #e0e0e0;
-            flex-wrap: wrap;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
         }
 
         .input-group {
             flex: 1;
-            min-width: 250px;
+        }
+
+        .input-group.date-group {
+            flex: 0 0 300px;
         }
 
         .input-group label {
             display: block;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #333;
-            font-size: 0.95em;
+            font-size: 0.9em;
         }
 
         .input-group input {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 8px;
+            padding: 10px;
+            margin-bottom: 0;
             border: 2px solid #ddd;
             border-radius: 8px;
-            font-size: 0.95em;
+            font-size: 0.9em;
             transition: border-color 0.3s;
         }
 
@@ -103,25 +328,39 @@
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 0.95em;
-            width: 100%;
+            width: 48%;
             cursor: pointer;
         }
 
+        .date-separator {
+            display: inline-block;
+            padding: 0 5px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .date-inputs-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         .submit-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 8px;
-            font-size: 1.1em;
+            background: white;
+            color: #667eea;
+            border: 2px solid white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s;
-            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .submit-btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         .main-content {
@@ -129,6 +368,7 @@
             gap: 0;
             flex: 1;
             overflow: hidden;
+            min-height: 0;
         }
 
         .left-panel, .right-panel {
@@ -145,6 +385,8 @@
             display: flex;
             flex-direction: column;
             padding: 0;
+            min-height: 0;
+            overflow: hidden;
         }
 
         .map-container {
@@ -240,14 +482,12 @@
             overflow-y: auto;
             padding: 25px;
             background: #f8f9fa;
-            max-height: calc(100vh - 300px);
+            min-height: 0;
         }
 
         .message {
             margin-bottom: 20px;
             animation: fadeIn 0.5s ease-in;
-            display: flex;
-            width: 100%;
         }
 
         @keyframes fadeIn {
@@ -258,14 +498,12 @@
         .message.ai {
             display: flex;
             gap: 10px;
-            align-items: flex-start;
         }
 
         .message.user {
             display: flex;
             gap: 10px;
             flex-direction: row-reverse;
-            align-items: flex-start;
         }
 
         .avatar {
@@ -294,23 +532,18 @@
             padding: 15px 18px;
             border-radius: 18px;
             line-height: 1.5;
-            word-break: keep-all;
-            word-wrap: break-word;
-            white-space: normal;
         }
 
         .message.ai .message-content {
             background: white;
             border: 1px solid #e0e0e0;
             border-top-left-radius: 4px;
-            min-width: 100px;
         }
 
         .message.user .message-content {
             background: #667eea;
             color: white;
             border-top-right-radius: 4px;
-            min-width: 100px;
         }
 
         .message-time {
@@ -386,47 +619,20 @@
             transform: scale(0.95);
         }
 
-        /* FAQ 페이지 스타일 */
+        /* FAQ 페이지 */
         .faq-page {
             display: none;
             width: 100%;
             height: 100vh;
             flex-direction: column;
-        }
-
-        .faq-page.active {
-            display: flex;
-        }
-
-        .faq-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .back-btn {
-            background: white;
-            color: #667eea;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .back-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            overflow: hidden;
         }
 
         .faq-content {
             display: flex;
             flex: 1;
             overflow: hidden;
+            min-height: 0;
         }
 
         .faq-sidebar {
@@ -490,6 +696,8 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
         }
 
         .faq-chat-messages {
@@ -497,16 +705,16 @@
             overflow-y: auto;
             padding: 30px;
             background: #f8f9fa;
-            max-height: calc(100vh - 300px);
+            min-height: 0;
         }
 
         @media (max-width: 1200px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
             .main-content, .faq-content {
                 flex-direction: column;
-            }
-            
-            .left-panel, .right-panel, .map-container {
-                max-height: 400px;
             }
 
             .faq-sidebar {
@@ -518,34 +726,135 @@
     </style>
 </head>
 <body>
+    <!-- 네비게이션 바 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="logo" onclick="showPage('main')">
+                <div>
+                    <div class="logo-main">FORIN SEOUL</div>
+                    <div class="logo-sub">AI Guide for Foreigners</div>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    추천
+                    <div class="dropdown">
+                        <div class="dropdown-item" onclick="showPage('recommendation')">맞춤형 관광 코스 추천</div>
+                        <div class="dropdown-item">인기 등산 코스 추천</div>
+                        <div class="dropdown-item">인기 관광지</div>
+                        <div class="dropdown-item">숨은 명소</div>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    여행 가이드
+                    <div class="dropdown">
+                        <div class="dropdown-item">한국어 기본 표현 가이드</div>
+                        <div class="dropdown-item">도보 관광</div>
+                        <div class="dropdown-item">교통 정보</div>
+                        <div class="dropdown-item">숙박 정보</div>
+                    </div>
+                </li>
+                <li class="nav-item" onclick="showPage('faq')">FAQ 챗봇</li>
+            </ul>
+        </div>
+    </nav>
+
     <!-- 메인 페이지 -->
-    <div class="container" id="mainPage">
-        <div class="header">
-            <h1>🗺️ 맞춤형 관광 코스 추천 시스템</h1>
-            <p>원하는 명소와 맛집을 입력하면 AI가 최적의 여행 코스를 추천해드립니다</p>
-            <button class="faq-btn" onclick="showFAQ()">❓ FAQ</button>
+    <div class="main-page" id="mainPage">
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1>서울, 새로운 여행의 시작</h1>
+                <p>AI가 추천하는 나만의 맞춤 관광 코스</p>
+                <button class="hero-button" onclick="showPage('recommendation')">지금 시작하기</button>
+            </div>
+        </section>
+
+               <section class="cards-section">
+            <h2 class="section-title">인기 추천 서비스</h2>
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-image">이미지 영역 1</div>
+                    <div class="card-content">
+                        <h3 class="card-title">인기 등산 코스 추천</h3>
+                        <p class="card-description">
+                            서울의 아름다운 산과 등산로를 추천합니다. 
+                            북한산, 남산, 인왕산 등 난이도별 코스 정보와 함께 
+                            소요 시간, 주요 명소, 편의시설 정보를 제공합니다.
+                        </p>
+                        <button class="card-button">코스 보기</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-image">이미지 영역 2</div>
+                    <div class="card-content">
+                        <h3 class="card-title">한국어 기본 표현 가이드</h3>
+                        <p class="card-description">
+                            여행 중 필요한 기본 한국어 표현을 배워보세요. 
+                            "할인해주세요", "이거 얼마예요?" 등 실용적인 표현부터 긴급 상황 대처 문구까지 제공합니다.
+                        </p>
+                        <button class="card-button">표현 배우기</button>
+                    </div>
+                </div>
+
+                <div class="card" onclick="showPage('faq')">
+                    <div class="card-image">이미지 영역 3</div>
+                    <div class="card-content">
+                        <h3 class="card-title">FAQ 챗봇</h3>
+                        <p class="card-description">
+                            서울 관광에 대한 궁금한 점을 AI 챗봇에게 물어보세요. 
+                            시티투어버스, 도보관광, 공연 예매 등 다양한 정보를 실시간으로 답변해드립니다.
+                        </p>
+                        <button class="card-button">질문하기</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 맞춤형 관광 코스 추천 페이지 -->
+    <div class="recommendation-page" id="recommendationPage">
+        <div class="page-header">
+            <div class="page-header-content">
+                <h1>🗺️ 맞춤형 관광 코스 추천 시스템</h1>
+                <p>원하는 명소와 맛집을 입력하면 AI가 최적의 여행 코스를 추천해드립니다</p>
+            </div>
+            <button class="submit-btn">코스 추천받기</button>
         </div>
 
         <div class="input-section">
-            <div class="input-group">
-                <label>🏛️ 방문하고 싶은 명소 (3곳)</label>
-                <input type="text" placeholder="명소 1 (예: 경복궁)">
-                <input type="text" placeholder="명소 2 (예: N서울타워)">
-                <input type="text" placeholder="명소 3 (예: 명동 거리)">
+            <div class="input-row">
+                <div class="input-group">
+                    <label>🏛️ 방문하고 싶은 명소 1</label>
+                    <input type="text" placeholder="예: 경복궁">
+                </div>
+                <div class="input-group">
+                    <label>🏛️ 방문하고 싶은 명소 2</label>
+                    <input type="text" placeholder="예: N서울타워">
+                </div>
+                <div class="input-group">
+                    <label>🏛️ 방문하고 싶은 명소 3</label>
+                    <input type="text" placeholder="예: 명동 거리">
+                </div>
             </div>
 
-            <div class="input-group">
-                <label>🍽️ 가고 싶은 음식점 (2-3곳)</label>
-                <input type="text" placeholder="음식점 1 (예: 광장시장)">
-                <input type="text" placeholder="음식점 2 (예: 명동교자)">
-                <input type="text" placeholder="음식점 3 (선택사항)">
-            </div>
-
-            <div class="input-group">
-                <label>📅 여행 날짜</label>
-                <input type="date" class="calendar-input" value="2025-11-20">
-                <input type="date" class="calendar-input" value="2025-11-21" style="margin-top: 8px;">
-                <button class="submit-btn">코스 추천받기</button>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>🍽️ 가고 싶은 음식점 1</label>
+                    <input type="text" placeholder="예: 광장시장">
+                </div>
+                <div class="input-group">
+                    <label>🍽️ 가고 싶은 음식점 2</label>
+                    <input type="text" placeholder="예: 명동교자">
+                </div>
+                <div class="input-group date-group">
+                    <label>📅 여행 날짜</label>
+                    <div class="date-inputs-wrapper">
+                        <input type="date" class="calendar-input" value="2025-11-18">
+                        <span class="date-separator">~</span>
+                        <input type="date" class="calendar-input" value="2025-11-20">
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -611,7 +920,7 @@
                         <circle cx="12" cy="10" r="3"></circle>
                     </svg>
                     <h3>지도 영역</h3>
-                    <p>여기에 Google Maps API 또는 Kakao Map API를 통해<br>최적 이동 경로와 추천 장소들이 표시됩니다</p>
+                    <p>Google Maps API 또는 Kakao Map API를 통해<br>최적 이동 경로와 추천 장소들이 표시됩니다</p>
                 </div>
             </div>
 
@@ -735,12 +1044,9 @@
 
     <!-- FAQ 페이지 -->
     <div class="faq-page" id="faqPage">
-        <div class="faq-header">
-            <div>
-                <h1>❓ 자주 묻는 질문 (FAQ)</h1>
-                <p style="font-size: 0.9em; margin-top: 5px; opacity: 0.9;">서울 관광에 대한 궁금한 점을 AI 챗봇에게 물어보세요</p>
-            </div>
-            <button class="back-btn" onclick="showMain()">← 메인으로</button>
+        <div class="page-header">
+            <h1>❓ 자주 묻는 질문 (FAQ)</h1>
+            <p>서울 관광에 대한 궁금한 점을 AI 챗봇에게 물어보세요</p>
         </div>
 
         <div class="faq-content">
@@ -910,20 +1216,25 @@
     </div>
 
     <script>
-        function showFAQ() {
+        function showPage(pageName) {
+            // 모든 페이지 숨기기
             document.getElementById('mainPage').style.display = 'none';
-            document.getElementById('faqPage').classList.add('active');
-        }
+            document.getElementById('recommendationPage').style.display = 'none';
+            document.getElementById('faqPage').style.display = 'none';
 
-        function showMain() {
-            document.getElementById('faqPage').classList.remove('active');
-            document.getElementById('mainPage').style.display = 'flex';
+            // 선택한 페이지만 보이기
+            if (pageName === 'main') {
+                document.getElementById('mainPage').style.display = 'block';
+            } else if (pageName === 'recommendation') {
+                document.getElementById('recommendationPage').style.display = 'flex';
+            } else if (pageName === 'faq') {
+                document.getElementById('faqPage').style.display = 'flex';
+            }
         }
 
         function askQuestion(element) {
             const question = element.textContent;
             addUserMessage(question);
-            // 실제 구현시 여기서 FAQ 데이터를 검색하거나 AI API를 호출
             setTimeout(() => {
                 addAIResponse(question);
             }, 500);
@@ -937,7 +1248,6 @@
                 addUserMessage(message);
                 input.value = '';
                 
-                // 실제 구현시 AI API 호출
                 setTimeout(() => {
                     addAIResponse(message);
                 }, 800);
@@ -966,7 +1276,6 @@
             const chatMessages = document.querySelector('.faq-chat-messages');
             const time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
             
-            // 더미 응답 생성 (실제로는 AI API에서 받아옴)
             let response = generateDummyResponse(question);
             
             const messageDiv = document.createElement('div');
@@ -984,7 +1293,6 @@
         }
 
         function generateDummyResponse(question) {
-            // FAQ 데이터 기반 응답 시뮬레이션
             const faqResponses = {
                 '좌석': '서울시티투어버스는 <strong>지정 좌석제가 아닌 자유석</strong>으로 운영됩니다.<br><br>일시적으로 관광객이 몰릴 경우에는 입석으로 탑승하거나 다음 회차의 버스를 이용해야 할 수도 있습니다.',
                 '비용': '아닙니다! 서울문화관광해설사 분들은 <strong>자원봉사자</strong>이므로 따로 해설비를 지불할 필요가 없습니다. 😊<br><br>단, 궁궐 입장료 등은 현장에서 각자 개별적으로 지불하셔야 합니다.',
@@ -993,171 +1301,14 @@
                 '맛집': '서울의 유명 맛집 지역을 추천해드릴게요! 🍽️<br><br><strong>지역별 맛집 명소:</strong><br><br>• <strong>광장시장</strong> - 전통 분식과 한식<br>• <strong>명동</strong> - 다양한 음식점과 카페<br>• <strong>이태원</strong> - 세계 각국의 요리<br>• <strong>강남</strong> - 고급 레스토랑<br>• <strong>홍대</strong> - 젊은 감각의 카페와 음식점<br><br>💡 저희 맞춤형 관광 코스 추천 시스템에서 원하는 맛집을 입력하시면 최적의 경로를 추천해드려요!'
             };
             
-            // 키워드 매칭
             for (let keyword in faqResponses) {
                 if (question.includes(keyword)) {
                     return faqResponses[keyword];
                 }
             }
             
-            // 기본 응답
-            return `"${question}"에 대해 답변드리겠습니다.<br><br>죄송합니다만, 해당 질문에 대한 정확한 FAQ 정보가 없습니다. 😅<br><br>하지만 일반적인 서울 관광 정보는 다음을 참고해주세요:<br><br>• <strong>Visit Seoul 웹사이트:</strong> https://korean.visitseoul.net<br>• <strong>관광 문의:</strong> 1330 (관광통역안내전화)<br>• <strong>서울시티투어버스:</strong> https://korean.visitseoul.net/citytourbus<br><br>더 자세한 정보는 빠른 시일내에 openAI API를 통해 제공해 드리겠습니다! 😊`;
+            return `"${question}"에 대해 답변드리겠습니다.<br><br>죄송합니다만, 해당 질문에 대한 정확한 FAQ 정보가 없습니다. 😅<br><br>하지만 일반적인 서울 관광 정보는 다음을 참고해주세요:<br><br>• <strong>Visit Seoul 웹사이트:</strong> https://korean.visitseoul.net<br>• <strong>관광 문의:</strong> 1330 (관광통역안내전화)<br>• <strong>서울시티투어버스:</strong> https://korean.visitseoul.net/citytourbus<br><br>더 자세한 정보가 필요하시면 다른 질문을 해주세요! 😊`;
         }
-    // API 주소 자동 설정 + 쿼리 오버라이드(?api=http://IP:PORT)
-  function getParam(name){ return new URL(location.href).searchParams.get(name); }
-  const forced = getParam('api');
-  const proto  = location.protocol;
-  const host   = location.hostname;
-  const API_BASE = forced || `${proto}//${host}:8000`;
-  const CHAT_URL = API_BASE + "/chat";
-
-  // 오른쪽 패널 엘리먼트 핸들
-  const rightPanel = document.querySelector('.right-panel');
-  const rpMessages = rightPanel.querySelector('.chat-messages');
-  const rpInput    = rightPanel.querySelector('.chat-input');
-  const rpSendBtn  = rightPanel.querySelector('.send-button');
-
-  let rpHistory = [];
-  let rpSending = false;
-
-  // 시간 문자열
-  function nowTime(){
-    return new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-  }
-
-  // 사용자/AI 말풍선 추가(오른쪽 패널 스타일 유지)
-  function rpAddMessage(role, html){
-    const wrap = document.createElement('div');
-    wrap.className = `message ${role}`;
-    wrap.innerHTML = role === 'user'
-      ? `<div class="avatar user">👤</div>
-         <div>
-           <div class="message-content">${html}</div>
-           <div class="message-time">${nowTime()}</div>
-         </div>`
-      : `<div class="avatar ai">🤖</div>
-         <div>
-           <div class="message-content">${html}</div>
-           <div class="message-time">${nowTime()}</div>
-         </div>`;
-    rpMessages.appendChild(wrap);
-    rpMessages.scrollTop = rpMessages.scrollHeight;
-  }
-
-  // 일정(itinerary_v1)을 기존 카드 스타일로 렌더
-  function rpRenderItinerary(it){
-    const parts = [];
-
-    // 요약이 있으면 첫 카드로
-    if (it.summary){
-      parts.push(
-        `<div class="itinerary-card">
-           <div class="it-day"><span class="badge">요약</span>여행 요약</div>
-           <div class="it-sub">${escapeHTML(it.summary)}</div>
-         </div>`
-      );
-    }
-
-    (it.days || []).forEach((day, di) => {
-      const dayTitle = day.date ? `${day.date}` : `Day ${di+1}`;
-      const rows = (day.segments || []).map(seg => {
-        const t1  = seg.time_start || '';
-        const t2  = seg.time_end   || '';
-        const time = (t1 || t2) ? `${t1}${t2?` ~ ${t2}`:''}` : '';
-        const title = seg.title || '';
-        const note  = seg.note  ? `<div class="it-sub">${escapeHTML(seg.note)}</div>` : '';
-
-        const metaBits = [];
-        if (seg.transport) metaBits.push(seg.transport);
-        if (seg.distance)  metaBits.push(seg.distance);
-        if (seg.review)    metaBits.push(`⭐ ${seg.review}`);
-        const meta = metaBits.length ? `<div class="it-meta">${escapeHTML(metaBits.join(' · '))}</div>` : '';
-
-        return `
-          <div class="it-row">
-            <div class="it-time">${escapeHTML(time)}</div>
-            <div class="it-body">
-              <div class="it-title">${escapeHTML(title)}</div>
-              ${note}
-              ${meta}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      parts.push(
-        `<div class="itinerary-card">
-           <div class="it-day"><span class="badge">${di+1}일차</span>${escapeHTML(dayTitle)}</div>
-           ${rows || `<div class="it-sub">등록된 세그먼트가 없습니다.</div>`}
-         </div>`
-      );
-    });
-
-    rpAddMessage('ai', parts.join(''));
-  }
-  
-  function escapeHTML(s){
-    return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  }
-
-  // 전송
-  async function rpSend(){
-    if(rpSending) return;
-    const text = (rpInput.value || '').trim();
-    if(!text) return;
-
-    rpSending = true;
-    rpInput.disabled = true;
-    rpSendBtn.disabled = true;
-
-    rpAddMessage('user', escapeHTML(text));
-    rpInput.value = '';
-
-    try{
-      const res = await fetch(CHAT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: rpHistory })
-      });
-
-      if(!res.ok){
-        const errText = await res.text();
-        rpAddMessage('ai', `서버 오류(${res.status}).<br>URL: ${CHAT_URL}<br>메시지: ${escapeHTML(errText.slice(0,300))}`);
-        return;
-      }
-
-      const data = await res.json();
-
-      // 모델이 itinerary_v1 JSON 구조를 보냈는지 체크
-      if (data && data.type === 'itinerary_v1') {
-        rpRenderItinerary(data);
-        rpHistory.push({ role:'assistant', content: JSON.stringify(data) });
-      } else {
-        const t = data.text || (typeof data === 'string' ? data : JSON.stringify(data));
-        rpAddMessage('ai', escapeHTML(t));
-        rpHistory.push({ role:'assistant', content: t });
-      }
-      rpHistory.push({ role:'user', content: text });
-
-    } catch(err){
-      rpAddMessage('ai', `네트워크 오류: ${escapeHTML(String(err))}<br>API: ${CHAT_URL}`);
-      console.error(err);
-    } finally{
-      rpSending = false;
-      rpInput.disabled = false;
-      rpSendBtn.disabled = false;
-      rpInput.focus();
-    }
-  }
-
-  // 이벤트 바인딩(오른쪽 패널만)
-  rpSendBtn.addEventListener('click', rpSend);
-  rpInput.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      rpSend();
-    }
-  });
-</script>
+    </script>
 </body>
 </html>
