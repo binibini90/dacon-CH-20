@@ -1,201 +1,1163 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AI 여행 플래너 챗봇</title>
-<style>
-  :root{
-    --w: 380px; --h: 600px;
-    --radius: 16px; --gap: 10px;
-    --bg: #ffffff; --line:#eaeaea; --text:#1f2937;
-    --bot:#f7f7fb; --user:#e8f0ff; --brand:#6b7cff;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,"Malgun Gothic",sans-serif}
-  .fab{
-    position:fixed; right:22px; bottom:22px; width:56px; height:56px;
-    border-radius:50%; background:var(--brand); color:#fff; border:none;
-    box-shadow:0 10px 24px rgba(0,0,0,.15); cursor:pointer; font-size:22px;
-  }
-  .panel{
-    position:fixed; right:22px; bottom:90px; width:var(--w); height:var(--h);
-    border:1px solid var(--line); background:var(--bg); border-radius:var(--radius);
-    box-shadow:0 18px 48px rgba(0,0,0,.18); display:none;
-    overflow:hidden; backdrop-filter:saturate(1.2);
-  }
-  .panel.open{display:flex; flex-direction:column}
-  .head{
-    height:56px; display:flex; align-items:center; padding:0 14px; gap:10px; border-bottom:1px solid var(--line);
-    background:linear-gradient(180deg,#f8f9ff,#fff);
-  }
-  .dot{width:8px;height:8px;border-radius:50%;background:#4ade80}
-  .title{font-weight:700}
-  .close{margin-left:auto; background:none;border:none;font-size:20px; cursor:pointer; color:#667085}
-  .msgs{flex:1; overflow:auto; padding:14px; display:flex; flex-direction:column; gap:12px; background:#fafafa}
-  .bubble{max-width:78%; padding:10px 12px; border-radius:14px; line-height:1.35; color:var(--text); white-space:pre-wrap}
-  .bot{align-self:flex-start; background:var(--bot); border:1px solid #efefef}
-  .user{align-self:flex-end; background:var(--user); border:1px solid #dfe8ff}
-  .syscard{align-self:flex-start; background:#fff; border:1px solid var(--line); border-left:4px solid var(--brand); padding:12px; border-radius:12px; color:#334155}
-  .typing{font-size:12px; color:#667085; padding:0 2px 6px 2px}
-  .input{display:flex; gap:8px; padding:10px; border-top:1px solid var(--line); background:#fff;}
-  .input input{flex:1; padding:12px 12px; border:1px solid var(--line); border-radius:12px; outline:none;}
-  .input button{padding:0 14px; border:none; border-radius:12px; background:var(--brand); color:#fff; font-weight:700; cursor:pointer;}
-  .card{border:1px solid var(--line); background:#fff; border-radius:12px; padding:10px 12px;}
-  .card h4{margin:2px 0 8px; font-size:14px}
-  .seg{display:flex; gap:8px; font-size:13px; border-top:1px dashed #eee; padding-top:6px; margin-top:6px}
-  .seg time{width:66px; color:#6b7280}
-  .seg .ttl{font-weight:600}
-  @media (max-width: 480px){
-    :root{--w: 95vw; --h: 70vh;}
-    .panel{right:10px; bottom:86px}
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>맞춤형 관광 코스 추천</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .faq-btn {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+
+        .faq-btn:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .input-section {
+            display: flex;
+            gap: 20px;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .calendar-input {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95em;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            display: flex;
+            gap: 0;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel, .right-panel {
+            flex: 1;
+            background: #ffffff;
+            padding: 25px;
+            overflow-y: auto;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .right-panel {
+            border-right: none;
+            border-left: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+
+        .map-container {
+            flex: 2;
+            background: #e8f4f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-placeholder {
+            text-align: center;
+            color: #666;
+        }
+
+        .map-placeholder svg {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .panel-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .restaurant-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+
+        .restaurant-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .restaurant-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .restaurant-info {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .rating {
+            color: #ffa500;
+            font-weight: bold;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+
+        .route-badge {
+            background: #28a745;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 25px;
+            font-weight: bold;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background: #f8f9fa;
+            max-height: calc(100vh - 300px);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-in;
+            display: flex;
+            width: 100%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.ai {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            display: flex;
+            gap: 10px;
+            flex-direction: row-reverse;
+            align-items: flex-start;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .avatar.ai {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .avatar.user {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .message-content {
+            max-width: 75%;
+            padding: 15px 18px;
+            border-radius: 18px;
+            line-height: 1.5;
+            word-break: keep-all;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        .message.ai .message-content {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-top-left-radius: 4px;
+            min-width: 100px;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-top-right-radius: 4px;
+            min-width: 100px;
+        }
+
+        .message-time {
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 5px;
+            padding: 0 10px;
+        }
+
+        .course-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .course-box strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .chat-input-container {
+            padding: 20px 25px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 0.95em;
+            outline: none;
+            transition: border-color 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .chat-input::placeholder {
+            color: #999;
+        }
+
+        .send-button {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        /* FAQ 페이지 스타일 */
+        .faq-page {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .faq-page.active {
+            display: flex;
+        }
+
+        .faq-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .back-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .faq-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .faq-sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            border-right: 2px solid #e0e0e0;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .faq-category {
+            margin-bottom: 15px;
+        }
+
+        .category-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #667eea;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .category-title:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .faq-questions {
+            margin-left: 10px;
+        }
+
+        .faq-question-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .faq-question-item:hover {
+            border-left-color: #667eea;
+            transform: translateX(5px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .faq-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .faq-chatbot {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .faq-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: #f8f9fa;
+            max-height: calc(100vh - 300px);
+        }
+
+        @media (max-width: 1200px) {
+            .main-content, .faq-content {
+                flex-direction: column;
+            }
+            
+            .left-panel, .right-panel, .map-container {
+                max-height: 400px;
+            }
+
+            .faq-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid #e0e0e0;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- 메인 페이지 -->
+    <div class="container" id="mainPage">
+        <div class="header">
+            <h1>🗺️ 맞춤형 관광 코스 추천 시스템</h1>
+            <p>원하는 명소와 맛집을 입력하면 AI가 최적의 여행 코스를 추천해드립니다</p>
+            <button class="faq-btn" onclick="showFAQ()">❓ FAQ</button>
+        </div>
 
-<button class="fab" id="fab">💬</button>
+        <div class="input-section">
+            <div class="input-group">
+                <label>🏛️ 방문하고 싶은 명소 (3곳)</label>
+                <input type="text" placeholder="명소 1 (예: 경복궁)">
+                <input type="text" placeholder="명소 2 (예: N서울타워)">
+                <input type="text" placeholder="명소 3 (예: 명동 거리)">
+            </div>
 
-<div class="panel" id="panel" aria-label="AI 여행 플래너">
-  <div class="head">
-    <span class="dot"></span><div class="title">AI 여행 플래너</div>
-    <button class="close" id="close" aria-label="닫기">✕</button>
-  </div>
-  <div class="msgs" id="msgs">
-    <div class="syscard">
-      안녕하세요! 원하는 장소/음식점/날짜를 말씀해 주세요.<br>
-      예) “11/20~21, 광장시장·명동교자 꼭 가고 경복궁/남산도 넣어줘”
+            <div class="input-group">
+                <label>🍽️ 가고 싶은 음식점 (2-3곳)</label>
+                <input type="text" placeholder="음식점 1 (예: 광장시장)">
+                <input type="text" placeholder="음식점 2 (예: 명동교자)">
+                <input type="text" placeholder="음식점 3 (선택사항)">
+            </div>
+
+            <div class="input-group">
+                <label>📅 여행 날짜</label>
+                <input type="date" class="calendar-input" value="2025-11-20">
+                <input type="date" class="calendar-input" value="2025-11-21" style="margin-top: 8px;">
+                <button class="submit-btn">코스 추천받기</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <h2 class="panel-title">📍 추천 음식점</h2>
+                
+                <div class="restaurant-item">
+                    <div class="restaurant-name">🍜 광장시장 본점</div>
+                    <div class="restaurant-info">
+                        <span class="rating">⭐ 4.8</span> · 리뷰 2,345개
+                    </div>
+                    <div class="restaurant-info">📍 서울 종로구 창경궁로 88</div>
+                    <div class="restaurant-info">💰 1인당 10,000원 · 한식, 분식</div>
+                    <span class="badge">경로 중간</span>
+                </div>
+
+                <div class="restaurant-item">
+                    <div class="restaurant-name">🥟 명동교자 본점</div>
+                    <div class="restaurant-info">
+                        <span class="rating">⭐ 4.6</span> · 리뷰 1,823개
+                    </div>
+                    <div class="restaurant-info">📍 서울 중구 명동10길 29</div>
+                    <div class="restaurant-info">💰 1인당 12,000원 · 중식, 만두</div>
+                    <span class="badge">명소 근처</span>
+                </div>
+
+                <div class="restaurant-item">
+                    <div class="restaurant-name">🍖 삼청동 수제비</div>
+                    <div class="restaurant-info">
+                        <span class="rating">⭐ 4.7</span> · 리뷰 1,456개
+                    </div>
+                    <div class="restaurant-info">📍 서울 종로구 삼청로 101-1</div>
+                    <div class="restaurant-info">💰 1인당 9,000원 · 한식, 수제비</div>
+                    <span class="badge">경로 근처</span>
+                </div>
+
+                <div class="restaurant-item">
+                    <div class="restaurant-name">🍝 이태원 파스타</div>
+                    <div class="restaurant-info">
+                        <span class="rating">⭐ 4.5</span> · 리뷰 987개
+                    </div>
+                    <div class="restaurant-info">📍 서울 용산구 이태원로 152</div>
+                    <div class="restaurant-info">💰 1인당 18,000원 · 양식, 파스타</div>
+                    <span class="badge">선택 가능</span>
+                </div>
+
+                <div class="restaurant-item">
+                    <div class="restaurant-name">🍛 인사동 전통찻집</div>
+                    <div class="restaurant-info">
+                        <span class="rating">⭐ 4.9</span> · 리뷰 2,103개
+                    </div>
+                    <div class="restaurant-info">📍 서울 종로구 인사동길 62</div>
+                    <div class="restaurant-info">💰 1인당 15,000원 · 카페, 전통차</div>
+                    <span class="badge route-badge">추천</span>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <div class="map-placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <h3>지도 영역</h3>
+                    <p>여기에 Google Maps API 또는 Kakao Map API를 통해<br>최적 이동 경로와 추천 장소들이 표시됩니다</p>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="chat-header">
+                    <span>🤖</span> AI 여행 플래너
+                </div>
+                
+                <div class="chat-messages">
+                    <div class="message ai">
+                        <div class="avatar ai">🤖</div>
+                        <div>
+                            <div class="message-content">
+                                안녕하세요! AI 여행 플래너입니다. 입력하신 정보를 바탕으로 최적의 여행 코스를 분석하고 있어요. 잠시만 기다려주세요! ✨
+                            </div>
+                            <div class="message-time">오전 10:23</div>
+                        </div>
+                    </div>
+
+                    <div class="message user">
+                        <div class="avatar user">👤</div>
+                        <div>
+                            <div class="message-content">
+                                경복궁, N서울타워, 명동 거리를 가고 싶어요. 광장시장과 명동교자도 꼭 가보고 싶습니다!
+                            </div>
+                            <div class="message-time">오전 10:24</div>
+                        </div>
+                    </div>
+
+                    <div class="message ai">
+                        <div class="avatar ai">🤖</div>
+                        <div>
+                            <div class="message-content">
+                                좋은 선택이시네요! 리뷰 데이터를 분석한 결과, 여러분의 여행 스타일에 완벽한 코스를 찾았습니다. 😊
+                                <br><br>
+                                KNN 알고리즘으로 2,345개의 리뷰를 분석한 결과, 경복궁 근처 '인사동 전통찻집'(평점 4.9)을 추가로 추천드려요!
+                            </div>
+                            <div class="message-time">오전 10:24</div>
+                        </div>
+                    </div>
+
+                    <div class="message ai">
+                        <div class="avatar ai">🤖</div>
+                        <div>
+                            <div class="message-content">
+                                <strong>📅 1일차 추천 코스</strong>
+                                <div class="course-box">
+                                    <strong>09:00 - 경복궁</strong>
+                                    명소 1 · 도보 8분 (600m)
+                                </div>
+                                <div class="course-box">
+                                    <strong>11:30 - 광장시장</strong>
+                                    점심 식사 · 차량 15분 (4.2km)<br>
+                                    ⭐ 4.8점 · 리뷰 2,345개
+                                </div>
+                                <div class="course-box">
+                                    <strong>13:00 - N서울타워</strong>
+                                    명소 2 · 도보 12분 (900m)
+                                </div>
+                                <div class="course-box">
+                                    <strong>16:00 - 인사동 전통찻집</strong>
+                                    추천 카페 · 경로상 위치<br>
+                                    ⭐ 4.9점 · 리뷰 2,103개
+                                </div>
+                            </div>
+                            <div class="message-time">오전 10:25</div>
+                        </div>
+                    </div>
+
+                    <div class="message ai">
+                        <div class="avatar ai">🤖</div>
+                        <div>
+                            <div class="message-content">
+                                <strong>📅 2일차 추천 코스</strong>
+                                <div class="course-box">
+                                    <strong>10:00 - 명동 거리</strong>
+                                    명소 3 · 도보 5분 (400m)
+                                </div>
+                                <div class="course-box">
+                                    <strong>12:30 - 명동교자</strong>
+                                    점심 식사 · 도보 3분 (200m)<br>
+                                    ⭐ 4.6점 · 리뷰 1,823개
+                                </div>
+                                <div class="course-box">
+                                    <strong>14:00 - 삼청동 수제비</strong>
+                                    경로상 맛집 · 간식 추천<br>
+                                    ⭐ 4.7점 · 리뷰 1,456개
+                                </div>
+                            </div>
+                            <div class="message-time">오전 10:25</div>
+                        </div>
+                    </div>
+
+                    <div class="message ai">
+                        <div class="avatar ai">🤖</div>
+                        <div>
+                            <div class="message-content">
+                                <strong>📊 여행 요약 정보</strong><br><br>
+                                <strong>총 이동 거리:</strong> 8.3km<br>
+                                <strong>예상 소요 시간:</strong> 2일<br>
+                                <strong>추천 교통수단:</strong> 도보 + 대중교통<br>
+                                <strong>예상 비용:</strong> 약 80,000원/인<br><br>
+                                이 코스는 이동 거리를 최소화하면서 평점이 높은 맛집들을 경로에 포함시켰어요. 즐거운 여행 되세요! 🎉
+                            </div>
+                            <div class="message-time">오전 10:26</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <input 
+                        type="text" 
+                        class="chat-input" 
+                        placeholder="메시지를 입력하세요... (예: 일정 변경, 추가 추천 요청)"
+                    >
+                    <button class="send-button">📤</button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="input">
-    <input id="m" placeholder="메시지를 입력하세요" />
-    <button id="send">전송</button>
-  </div>
-</div>
 
-<script>
-/** ▣ API 주소 자동 설정 -----------------------------------------------
- *  - 기본: 현재 페이지와 동일한 프로토콜 + 호스트에 포트만 8000으로
- *  - ?api=URL 쿼리로 강제 지정 가능(예: chatbot.html?api=http://127.0.0.1:8000)
- */
-function getParam(name){ return new URL(location.href).searchParams.get(name); }
-const forced = getParam('api');
-const proto  = location.protocol;                   // http: or https:
-const host   = location.hostname;                   // 127.0.0.1 / localhost / 도메인
-const API_BASE = forced || `${proto}//${host}:8000`;
-const CHAT_URL = API_BASE + "/chat";
+    <!-- FAQ 페이지 -->
+    <div class="faq-page" id="faqPage">
+        <div class="faq-header">
+            <div>
+                <h1>❓ 자주 묻는 질문 (FAQ)</h1>
+                <p style="font-size: 0.9em; margin-top: 5px; opacity: 0.9;">서울 관광에 대한 궁금한 점을 AI 챗봇에게 물어보세요</p>
+            </div>
+            <button class="back-btn" onclick="showMain()">← 메인으로</button>
+        </div>
 
-/** ▣ 엘리먼트 */
-const fab = document.getElementById('fab');
-const panel = document.getElementById('panel');
-const closeBtn = document.getElementById('close');
-const msgs = document.getElementById('msgs');
-const sendBtn = document.getElementById('send');
-const input = document.getElementById('m');
+        <div class="faq-content">
+            <div class="faq-sidebar">
+                <div class="faq-category">
+                    <div class="category-title">🚌 서울시티투어버스</div>
+                    <div class="faq-questions">
+                        <div class="faq-question-item" onclick="askQuestion(this)">정류장에서 하차 후 다른 시티투어버스를 이용할 수 있나요?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">탑승 장소 및 출발지는 어디인가요?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">할인 이벤트나 혜택이 있나요?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">모든 코스에서 가이드가 제공되나요?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">좌석을 선택할 수 있나요?</div>
+                    </div>
+                </div>
 
-let history = [];
-let sending = false;
+                <div class="faq-category">
+                    <div class="category-title">🚶 도보관광</div>
+                    <div class="faq-questions">
+                        <div class="faq-question-item" onclick="askQuestion(this)">도보관광 예약 가능한 최소, 최대 인원은?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">내국인도 외국어 해설을 들을 수 있나요?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">예약 취소는 어떻게 하나요?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">도보관광 해설사에게 비용을 지불해야 하나요?</div>
+                    </div>
+                </div>
 
-fab.onclick = () => panel.classList.add('open');
-closeBtn.onclick = () => panel.classList.remove('open');
+                <div class="faq-category">
+                    <div class="category-title">🎭 문화행사 예매</div>
+                    <div class="faq-questions">
+                        <div class="faq-question-item" onclick="askQuestion(this)">공연 시간보다 늦게 도착해도 입장할 수 있나요?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">티켓은 어디서 받나요?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">취소 수수료는 얼마인가요?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">예약을 일부만 취소할 수 있나요?</div>
+                    </div>
+                </div>
 
-/* 페이지 들어오면 자동으로 열기(원치 않으면 주석처리) */
-window.addEventListener('load', ()=> panel.classList.add('open'));
+                <div class="faq-category">
+                    <div class="category-title">📱 서비스 이용</div>
+                    <div class="faq-questions">
+                        <div class="faq-question-item" onclick="askQuestion(this)">가이드북, 지도는 어디서 다운로드 받나요?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">Visit Seoul 앱은 어디서 다운로드 받나요?</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">서울시내 관광 안내소 위치를 알려주세요</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">Visit Seoul 웹사이트에서 어떤 정보를 얻을 수 있나요?</div>
+                    </div>
+                </div>
 
-function addBubble(who, html){
-  const d = document.createElement('div');
-  d.className = 'bubble ' + who;
-  d.innerHTML = html;
-  msgs.appendChild(d);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-function addTyping(){
-  if (document.getElementById('typing')) return;
-  const t = document.createElement('div');
-  t.className = 'typing'; t.id = 'typing';
-  t.textContent = '응답 작성 중...';
-  msgs.appendChild(t);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-function removeTyping(){
-  const t = document.getElementById('typing');
-  if (t) t.remove();
-}
-function esc(s){ return s.replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+                <div class="faq-category">
+                    <div class="category-title">ℹ️ 기타</div>
+                    <div class="faq-questions">
+                        <div class="faq-question-item" onclick="askQuestion(this)">Visit Seoul 데이터를 사용하고 싶어요</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">전시를 visitseoul.net에 등록하고 싶어요</div>
+                        <div class="faq-question-item" onclick="askQuestion(this)">웹사이트의 사진을 자유롭게 사용할 수 있나요?</div>
+                    </div>
+                </div>
+            </div>
 
-function renderItinerary(it){
-  const wrap = document.createElement('div'); wrap.className = 'card';
-  wrap.innerHTML = `<h4>추천 코스</h4>`;
-  (it.days||[]).forEach(day=>{
-    const h = document.createElement('div');
-    h.innerHTML = `<div style="font-weight:700; margin:6px 0;">📅 ${day.date}</div>`;
-    wrap.appendChild(h);
-    (day.segments||[]).forEach(seg=>{
-      const row = document.createElement('div'); row.className = 'seg';
-      const t1 = seg.time_start || ''; const t2 = seg.time_end || '';
-      const ttl = seg.title || '';
-      const note = seg.note ? `<div style="color:#6b7280">${esc(seg.note)}</div>` : '';
-      row.innerHTML = `<time>${t1}~${t2}</time><div><div class="ttl">${esc(ttl)}</div>${note}</div>`;
-      wrap.appendChild(row);
-    });
-  });
-  msgs.appendChild(wrap);
-  msgs.scrollTop = msgs.scrollHeight;
-}
+            <div class="faq-main">
+                <div class="faq-chatbot">
+                    <div class="chat-header">
+                        <span>🤖</span> FAQ AI 챗봇
+                    </div>
+                    
+                    <div class="faq-chat-messages">
+                        <div class="message ai">
+                            <div class="avatar ai">🤖</div>
+                            <div>
+                                <div class="message-content">
+                                    안녕하세요! 서울 관광 FAQ 챗봇입니다. 😊<br><br>
+                                    왼쪽 카테고리에서 질문을 선택하시거나, 아래 입력창에 궁금한 내용을 직접 입력해주세요.<br><br>
+                                    저는 다음과 같은 정보를 제공할 수 있습니다:<br>
+                                    • 서울시티투어버스 이용 안내<br>
+                                    • 도보관광 프로그램 정보<br>
+                                    • 문화행사 예매 관련 문의<br>
+                                    • Visit Seoul 서비스 이용 방법<br>
+                                    • 기타 서울 관광 관련 질문
+                                </div>
+                                <div class="message-time">오후 2:30</div>
+                            </div>
+                        </div>
 
-async function send(){
-  if(sending) return;
-  const text = input.value.trim();
-  if(!text) return;
-  sending = true;
-  input.disabled = true; sendBtn.disabled = true;
+                        <div class="message user">
+                            <div class="avatar user">👤</div>
+                            <div>
+                                <div class="message-content">
+                                    서울시티투어버스는 좌석을 선택할 수 있나요?
+                                </div>
+                                <div class="message-time">오후 2:31</div>
+                            </div>
+                        </div>
 
-  addBubble('user', esc(text));
-  input.value = ""; addTyping();
+                        <div class="message ai">
+                            <div class="avatar ai">🤖</div>
+                            <div>
+                                <div class="message-content">
+                                    서울시티투어버스는 <strong>지정 좌석제가 아닌 자유석</strong>으로 운영됩니다.<br><br>
+                                    일시적으로 관광객이 몰릴 경우에는 입석으로 탑승하거나 다음 회차의 버스를 이용해야 할 수도 있습니다.<br><br>
+                                    💡 <em>팁: 성수기에는 일찍 도착하셔서 좋은 자리를 선점하시는 것을 추천드립니다!</em>
+                                </div>
+                                <div class="message-time">오후 2:31</div>
+                            </div>
+                        </div>
 
-  try{
-    const r = await fetch(CHAT_URL, {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json'
-      },
-      body: JSON.stringify({ message: text, history })
-    });
+                        <div class="message user">
+                            <div class="avatar user">👤</div>
+                            <div>
+                                <div class="message-content">
+                                    도보관광 해설사에게 비용을 지불해야 하나요?
+                                </div>
+                                <div class="message-time">오후 2:32</div>
+                            </div>
+                        </div>
 
-    // HTTP 에러 처리
-    if(!r.ok){
-      const errText = await r.text();
-      removeTyping();
-      addBubble('bot', `서버 오류(${r.status}).\nURL: ${CHAT_URL}\n메시지: ${esc(errText.slice(0,300))}`);
-      return;
-    }
+                        <div class="message ai">
+                            <div class="avatar ai">🤖</div>
+                            <div>
+                                <div class="message-content">
+                                    아닙니다! 서울문화관광해설사 분들은 <strong>자원봉사자</strong>이므로 따로 해설비를 지불할 필요가 없습니다. 😊<br><br>
+                                    단, 궁궐 입장료 등은 현장에서 각자 개별적으로 지불하셔야 합니다.<br><br>
+                                    📌 <strong>참고사항:</strong><br>
+                                    • 해설 서비스: 무료<br>
+                                    • 입장료/교통비: 개인 부담
+                                </div>
+                                <div class="message-time">오후 2:32</div>
+                            </div>
+                        </div>
 
-    const data = await r.json();
-    removeTyping();
+                        <div class="message user">
+                            <div class="avatar user">👤</div>
+                            <div>
+                                <div class="message-content">
+                                    서울에서 가장 인기 있는 야경 명소는 어디인가요?
+                                </div>
+                                <div class="message-time">오후 2:33</div>
+                            </div>
+                        </div>
 
-    if (data.type === 'itinerary_v1') {
-      if (data.summary) addBubble('bot', esc(data.summary));
-      renderItinerary(data);
-      history.push({role:'assistant', content: JSON.stringify(data)});
-    } else {
-      const t = data.text || (typeof data === 'string' ? data : JSON.stringify(data));
-      addBubble('bot', esc(t));
-      history.push({role:'assistant', content: t});
-    }
-    history.push({role:'user', content: text});
-  } catch(e){
-    removeTyping();
-    addBubble('bot', `네트워크 오류: ${esc(String(e))}\nAPI: ${CHAT_URL}`);
-    console.error(e);
-  } finally {
-    sending = false;
-    input.disabled = false; sendBtn.disabled = false;
-    input.focus();
+                        <div class="message ai">
+                            <div class="avatar ai">🤖</div>
+                            <div>
+                                <div class="message-content">
+                                    서울에서 가장 인기 있는 야경 명소들을 추천해드릴게요! 🌃<br><br>
+                                    <strong>🌟 TOP 5 야경 명소:</strong><br><br>
+                                    1. <strong>N서울타워</strong> - 서울 전경을 360도로 감상<br>
+                                    2. <strong>한강 반포대교 달빛무지개분수</strong> - 화려한 분수쇼<br>
+                                    3. <strong>북악스카이웨이 팔각정</strong> - 서울 도심 전망<br>
+                                    4. <strong>여의도 한강공원</strong> - 63빌딩과 다리 야경<br>
+                                    5. <strong>롯데월드타워 서울스카이</strong> - 초고층 전망대<br><br>
+                                    💡 <em>서울시티투어버스 야경코스를 이용하시면 편하게 여러 명소를 둘러보실 수 있어요!</em>
+                                </div>
+                                <div class="message-time">오후 2:33</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-container">
+                        <input 
+                            type="text" 
+                            class="chat-input" 
+                            id="faqChatInput"
+                            placeholder="서울 관광에 대해 궁금한 점을 물어보세요..."
+                            onkeypress="if(event.key === 'Enter') sendFAQMessage()"
+                        >
+                        <button class="send-button" onclick="sendFAQMessage()">📤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showFAQ() {
+            document.getElementById('mainPage').style.display = 'none';
+            document.getElementById('faqPage').classList.add('active');
+        }
+
+        function showMain() {
+            document.getElementById('faqPage').classList.remove('active');
+            document.getElementById('mainPage').style.display = 'flex';
+        }
+
+        function askQuestion(element) {
+            const question = element.textContent;
+            addUserMessage(question);
+            // 실제 구현시 여기서 FAQ 데이터를 검색하거나 AI API를 호출
+            setTimeout(() => {
+                addAIResponse(question);
+            }, 500);
+        }
+
+        function sendFAQMessage() {
+            const input = document.getElementById('faqChatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addUserMessage(message);
+                input.value = '';
+                
+                // 실제 구현시 AI API 호출
+                setTimeout(() => {
+                    addAIResponse(message);
+                }, 800);
+            }
+        }
+
+        function addUserMessage(text) {
+            const chatMessages = document.querySelector('.faq-chat-messages');
+            const time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            messageDiv.innerHTML = `
+                <div class="avatar user">👤</div>
+                <div>
+                    <div class="message-content">${text}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addAIResponse(question) {
+            const chatMessages = document.querySelector('.faq-chat-messages');
+            const time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            
+            // 더미 응답 생성 (실제로는 AI API에서 받아옴)
+            let response = generateDummyResponse(question);
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai';
+            messageDiv.innerHTML = `
+                <div class="avatar ai">🤖</div>
+                <div>
+                    <div class="message-content">${response}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function generateDummyResponse(question) {
+            // FAQ 데이터 기반 응답 시뮬레이션
+            const faqResponses = {
+                '좌석': '서울시티투어버스는 <strong>지정 좌석제가 아닌 자유석</strong>으로 운영됩니다.<br><br>일시적으로 관광객이 몰릴 경우에는 입석으로 탑승하거나 다음 회차의 버스를 이용해야 할 수도 있습니다.',
+                '비용': '아닙니다! 서울문화관광해설사 분들은 <strong>자원봉사자</strong>이므로 따로 해설비를 지불할 필요가 없습니다. 😊<br><br>단, 궁궐 입장료 등은 현장에서 각자 개별적으로 지불하셔야 합니다.',
+                '할인': '서울시티투어버스를 운영하는 타이거버스 및 노랑풍선시티버스에서 비정기적으로 특별할인가를 제공하고 있습니다. 홈페이지에서 프로모션 가격을 확인해주세요.<br><br>○ 타이거버스 : https://www.seoulcitybus.com/main.do<br>○ 노랑풍선시티버스 : https://www.seoulcitytourbus.co.kr/',
+                '야경': '서울에서 가장 인기 있는 야경 명소들을 추천해드릴게요! 🌃<br><br><strong>🌟 TOP 5 야경 명소:</strong><br><br>1. <strong>N서울타워</strong> - 서울 전경을 360도로 감상<br>2. <strong>한강 반포대교 달빛무지개분수</strong> - 화려한 분수쇼<br>3. <strong>북악스카이웨이 팔각정</strong> - 서울 도심 전망<br>4. <strong>여의도 한강공원</strong> - 63빌딩과 다리 야경<br>5. <strong>롯데월드타워 서울스카이</strong> - 초고층 전망대',
+                '맛집': '서울의 유명 맛집 지역을 추천해드릴게요! 🍽️<br><br><strong>지역별 맛집 명소:</strong><br><br>• <strong>광장시장</strong> - 전통 분식과 한식<br>• <strong>명동</strong> - 다양한 음식점과 카페<br>• <strong>이태원</strong> - 세계 각국의 요리<br>• <strong>강남</strong> - 고급 레스토랑<br>• <strong>홍대</strong> - 젊은 감각의 카페와 음식점<br><br>💡 저희 맞춤형 관광 코스 추천 시스템에서 원하는 맛집을 입력하시면 최적의 경로를 추천해드려요!'
+            };
+            
+            // 키워드 매칭
+            for (let keyword in faqResponses) {
+                if (question.includes(keyword)) {
+                    return faqResponses[keyword];
+                }
+            }
+            
+            // 기본 응답
+            return `"${question}"에 대해 답변드리겠습니다.<br><br>죄송합니다만, 해당 질문에 대한 정확한 FAQ 정보가 없습니다. 😅<br><br>하지만 일반적인 서울 관광 정보는 다음을 참고해주세요:<br><br>• <strong>Visit Seoul 웹사이트:</strong> https://korean.visitseoul.net<br>• <strong>관광 문의:</strong> 1330 (관광통역안내전화)<br>• <strong>서울시티투어버스:</strong> https://korean.visitseoul.net/citytourbus<br><br>더 자세한 정보는 빠른 시일내에 openAI API를 통해 제공해 드리겠습니다! 😊`;
+        }
+    // API 주소 자동 설정 + 쿼리 오버라이드(?api=http://IP:PORT)
+  function getParam(name){ return new URL(location.href).searchParams.get(name); }
+  const forced = getParam('api');
+  const proto  = location.protocol;
+  const host   = location.hostname;
+  const API_BASE = forced || `${proto}//${host}:8000`;
+  const CHAT_URL = API_BASE + "/chat";
+
+  // 오른쪽 패널 엘리먼트 핸들
+  const rightPanel = document.querySelector('.right-panel');
+  const rpMessages = rightPanel.querySelector('.chat-messages');
+  const rpInput    = rightPanel.querySelector('.chat-input');
+  const rpSendBtn  = rightPanel.querySelector('.send-button');
+
+  let rpHistory = [];
+  let rpSending = false;
+
+  // 시간 문자열
+  function nowTime(){
+    return new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
   }
-}
 
-sendBtn.onclick = send;
-input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); send(); }});
+  // 사용자/AI 말풍선 추가(오른쪽 패널 스타일 유지)
+  function rpAddMessage(role, html){
+    const wrap = document.createElement('div');
+    wrap.className = `message ${role}`;
+    wrap.innerHTML = role === 'user'
+      ? `<div class="avatar user">👤</div>
+         <div>
+           <div class="message-content">${html}</div>
+           <div class="message-time">${nowTime()}</div>
+         </div>`
+      : `<div class="avatar ai">🤖</div>
+         <div>
+           <div class="message-content">${html}</div>
+           <div class="message-time">${nowTime()}</div>
+         </div>`;
+    rpMessages.appendChild(wrap);
+    rpMessages.scrollTop = rpMessages.scrollHeight;
+  }
+
+  // 일정(itinerary_v1)을 기존 카드 스타일로 렌더
+  function rpRenderItinerary(it){
+    const parts = [];
+
+    // 요약이 있으면 첫 카드로
+    if (it.summary){
+      parts.push(
+        `<div class="itinerary-card">
+           <div class="it-day"><span class="badge">요약</span>여행 요약</div>
+           <div class="it-sub">${escapeHTML(it.summary)}</div>
+         </div>`
+      );
+    }
+
+    (it.days || []).forEach((day, di) => {
+      const dayTitle = day.date ? `${day.date}` : `Day ${di+1}`;
+      const rows = (day.segments || []).map(seg => {
+        const t1  = seg.time_start || '';
+        const t2  = seg.time_end   || '';
+        const time = (t1 || t2) ? `${t1}${t2?` ~ ${t2}`:''}` : '';
+        const title = seg.title || '';
+        const note  = seg.note  ? `<div class="it-sub">${escapeHTML(seg.note)}</div>` : '';
+
+        const metaBits = [];
+        if (seg.transport) metaBits.push(seg.transport);
+        if (seg.distance)  metaBits.push(seg.distance);
+        if (seg.review)    metaBits.push(`⭐ ${seg.review}`);
+        const meta = metaBits.length ? `<div class="it-meta">${escapeHTML(metaBits.join(' · '))}</div>` : '';
+
+        return `
+          <div class="it-row">
+            <div class="it-time">${escapeHTML(time)}</div>
+            <div class="it-body">
+              <div class="it-title">${escapeHTML(title)}</div>
+              ${note}
+              ${meta}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      parts.push(
+        `<div class="itinerary-card">
+           <div class="it-day"><span class="badge">${di+1}일차</span>${escapeHTML(dayTitle)}</div>
+           ${rows || `<div class="it-sub">등록된 세그먼트가 없습니다.</div>`}
+         </div>`
+      );
+    });
+
+    rpAddMessage('ai', parts.join(''));
+  }
+  
+  function escapeHTML(s){
+    return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  }
+
+  // 전송
+  async function rpSend(){
+    if(rpSending) return;
+    const text = (rpInput.value || '').trim();
+    if(!text) return;
+
+    rpSending = true;
+    rpInput.disabled = true;
+    rpSendBtn.disabled = true;
+
+    rpAddMessage('user', escapeHTML(text));
+    rpInput.value = '';
+
+    try{
+      const res = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: rpHistory })
+      });
+
+      if(!res.ok){
+        const errText = await res.text();
+        rpAddMessage('ai', `서버 오류(${res.status}).<br>URL: ${CHAT_URL}<br>메시지: ${escapeHTML(errText.slice(0,300))}`);
+        return;
+      }
+
+      const data = await res.json();
+
+      // 모델이 itinerary_v1 JSON 구조를 보냈는지 체크
+      if (data && data.type === 'itinerary_v1') {
+        rpRenderItinerary(data);
+        rpHistory.push({ role:'assistant', content: JSON.stringify(data) });
+      } else {
+        const t = data.text || (typeof data === 'string' ? data : JSON.stringify(data));
+        rpAddMessage('ai', escapeHTML(t));
+        rpHistory.push({ role:'assistant', content: t });
+      }
+      rpHistory.push({ role:'user', content: text });
+
+    } catch(err){
+      rpAddMessage('ai', `네트워크 오류: ${escapeHTML(String(err))}<br>API: ${CHAT_URL}`);
+      console.error(err);
+    } finally{
+      rpSending = false;
+      rpInput.disabled = false;
+      rpSendBtn.disabled = false;
+      rpInput.focus();
+    }
+  }
+
+  // 이벤트 바인딩(오른쪽 패널만)
+  rpSendBtn.addEventListener('click', rpSend);
+  rpInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      rpSend();
+    }
+  });
 </script>
 </body>
 </html>
