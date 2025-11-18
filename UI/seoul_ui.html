@@ -127,8 +127,8 @@
 
         .hero-section {
             height: 600px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9)),
-                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23e0e0e0" width="1200" height="600"/><text x="50%" y="50%" font-size="48" fill="%23999" text-anchor="middle" dominant-baseline="middle">메인 배너 이미지 영역</text></svg>');
+            background:
+            url('UI/images/main_2.png');  /*  여기에 이미지 파일명 입력 */
             background-size: cover;
             background-position: center;
             display: flex;
@@ -151,8 +151,8 @@
         }
 
         .hero-button {
-            background: white;
-            color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border: none;
             padding: 18px 40px;
             font-size: 1.2em;
@@ -203,15 +203,19 @@
         }
 
         .card-image {
+        width: 100%;
+        height: 250px;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        }
+
+        .card-image img {
             width: 100%;
-            height: 250px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2em;
-            font-weight: bold;
+            height: 100%;
+            object-fit: cover;
         }
 
         .card-content {
@@ -770,23 +774,28 @@
             </div>
         </section>
 
-        <section class="cards-section">
+            <section class="cards-section">
             <h2 class="section-title">인기 추천 서비스</h2>
             <div class="cards-grid">
-                <div class="card" onclick="showPage('recommendation')">
-                    <div class="card-image">이미지 영역 1</div>
+                <div class="card">
+                    <div class="card-image">
+                    <img src="UI/images/hiking_.png" alt="등산 코스">
+                    </div>
                     <div class="card-content">
-                        <h3 class="card-title">맞춤형 관광 코스 추천</h3>
+                        <h3 class="card-title">인기 등산 코스 추천</h3>
                         <p class="card-description">
-                            AI가 당신의 취향을 분석하여 최적의 여행 코스를 추천합니다. 
-                            명소와 맛집을 입력하면 효율적인 동선과 함께 숨은 명소까지 제안해드립니다.
+                            서울의 아름다운 산과 등산로를 추천합니다. 
+                            북한산, 남산, 인왕산 등 난이도별 코스 정보와 함께 
+                            소요 시간, 주요 명소, 편의시설 정보를 제공합니다.
                         </p>
-                        <button class="card-button">자세히 보기</button>
+                        <button class="card-button">코스 보기</button>
                     </div>
                 </div>
 
                 <div class="card">
-                    <div class="card-image">이미지 영역 2</div>
+                    <div class="card-image">
+                        <img src="UI/images/korean.png" alt="한국어 표현 가이드">
+                    </div>
                     <div class="card-content">
                         <h3 class="card-title">한국어 기본 표현 가이드</h3>
                         <p class="card-description">
@@ -798,7 +807,9 @@
                 </div>
 
                 <div class="card" onclick="showPage('faq')">
-                    <div class="card-image">이미지 영역 3</div>
+                    <div class="card-image">
+                        <img src="UI/images/faq.png" alt="FAQ 챗봇">
+                    </div>
                     <div class="card-content">
                         <h3 class="card-title">FAQ 챗봇</h3>
                         <p class="card-description">
