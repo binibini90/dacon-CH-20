@@ -1046,30 +1046,56 @@
 
   // 일정(itinerary_v1)을 기존 카드 스타일로 렌더
   function rpRenderItinerary(it){
-    if (it.summary) rpAddMessage('ai', escapeHTML(it.summary));
+    const parts = [];
 
-    let html = '';
+    // 요약이 있으면 첫 카드로
+    if (it.summary){
+      parts.push(
+        `<div class="itinerary-card">
+           <div class="it-day"><span class="badge">요약</span>여행 요약</div>
+           <div class="it-sub">${escapeHTML(it.summary)}</div>
+         </div>`
+      );
+    }
+
     (it.days || []).forEach((day, di) => {
-      html += `<strong>📅 ${escapeHTML(day.date || `Day ${di+1}`)}</strong>`;
-      (day.segments || []).forEach(seg => {
+      const dayTitle = day.date ? `${day.date}` : `Day ${di+1}`;
+      const rows = (day.segments || []).map(seg => {
         const t1  = seg.time_start || '';
         const t2  = seg.time_end   || '';
-        const ttl = seg.title || '';
-        const note= seg.note  || '';
-        const move= seg.transport ? ` · ${escapeHTML(seg.transport)}` : '';
-        const dist= seg.distance ? ` (${escapeHTML(seg.distance)})` : '';
-        html += `
-          <div class="course-box">
-            <strong>${escapeHTML(t1)}${t2?` - ${escapeHTML(t2)}`:''} - ${escapeHTML(ttl)}</strong>
-            ${note ? `${escapeHTML(note)}<br>` : ''}
-            ${move}${dist}
-          </div>`;
-      });
-    });
-    if (!html) html = '적절한 일정을 만들 수 없어 텍스트로 안내했어요.';
-    rpAddMessage('ai', html);
-  }
+        const time = (t1 || t2) ? `${t1}${t2?` ~ ${t2}`:''}` : '';
+        const title = seg.title || '';
+        const note  = seg.note  ? `<div class="it-sub">${escapeHTML(seg.note)}</div>` : '';
 
+        const metaBits = [];
+        if (seg.transport) metaBits.push(seg.transport);
+        if (seg.distance)  metaBits.push(seg.distance);
+        if (seg.review)    metaBits.push(`⭐ ${seg.review}`);
+        const meta = metaBits.length ? `<div class="it-meta">${escapeHTML(metaBits.join(' · '))}</div>` : '';
+
+        return `
+          <div class="it-row">
+            <div class="it-time">${escapeHTML(time)}</div>
+            <div class="it-body">
+              <div class="it-title">${escapeHTML(title)}</div>
+              ${note}
+              ${meta}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      parts.push(
+        `<div class="itinerary-card">
+           <div class="it-day"><span class="badge">${di+1}일차</span>${escapeHTML(dayTitle)}</div>
+           ${rows || `<div class="it-sub">등록된 세그먼트가 없습니다.</div>`}
+         </div>`
+      );
+    });
+
+    rpAddMessage('ai', parts.join(''));
+  }
+  
   function escapeHTML(s){
     return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   }
